@@ -193,8 +193,8 @@ while True:
                 print("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
         elif line.find("NICK :") != -1:
             if nick != botnick:
-                msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ nick +" has changed their nsmr: "+text\
-                      +"."
+                msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0]
+                +" has changed their name: "+line.split(":", 2)[2]+"."
                 msgs.append(msg)
                 print("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
 
