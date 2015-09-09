@@ -66,7 +66,7 @@ password = details[4]
 primary = [details[3]]
 secondary = []
 
-ctypes.windll.kernel32.SetConsoleTitleW("XeIRC - "+botnick+" @ "+server+":"+port)
+ctypes.windll.kernel32.SetConsoleTitleW("XeIRC - "+botnick+" @ "+server+":"+str(port))
 
 msgs = []
 
