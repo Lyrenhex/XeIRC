@@ -183,12 +183,14 @@ while True:
                 print("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
         elif line.find("PART :") != -1:
             if nick != botnick:
-                msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ nick +" has left the channel: "+text+"."
+                msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
+                      +" has left the channel: "+line.split(":", 2)[2]+"."
                 msgs.append(msg)
                 print("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
         elif line.find("QUIT :") != -1:
             if nick != botnick:
-                msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ nick +" has left the server: "+text+"."
+                msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
+                      +" has left the server: "+line.split(":", 2)[2]+"."
                 msgs.append(msg)
                 print("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
         elif line.find("NICK :") != -1:
