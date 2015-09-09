@@ -102,7 +102,7 @@ def send():
                 sendt = ""
             if "@" in sendt:
                 msgid = sendt.split("|")[0].split("@")[1]
-                sendt = msgs[int(msgid)]+" | " + sendt.split("|")[1]
+                sendt = "\x1d"+msgs[int(msgid)]+"\x1d | " + sendt.split("|")[1]
             if "/chan" in sendt:
                 channel = sendt.split(" ")[1]
             elif "/join" in sendt:
