@@ -126,7 +126,7 @@ def send():
                 print("Help:")
                 print("@<messageid>|<text> will quote the message at that messageid")
                 print("/chan <channel/nick> will switch the chatting channel to to <channel/nick>. \
-                      Ensure that you have joined the channel, if trying to chat on a channel, first")
+Ensure that you have joined the channel, if trying to chat on a channel, first")
                 print("/join <channel> [password] will join the channel for listening and /chan'ing to to speak")
                 print("/quit <message> will quit the server")
                 print("/away <message> will set you as away (and change your nickname accordingly)")
