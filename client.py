@@ -107,7 +107,7 @@ def send():
                 channel = sendt.split(" ")[1]
             elif "/join" in sendt:
                 channel = sendt.split(" ")[1]
-                irc.send(bytes("JOIN "+ sendt.split(" ")[1] +"\n", "utf-8"))
+                irc.send(bytes("JOIN "+ sendt.split(" ", 1)[1] +"\n", "utf-8"))
             elif "/quit" in sendt:
                 irc.send(bytes("QUIT :"+ sendt.split(" ", 1)[1] +"\n", "utf-8"))
             elif "/away" in sendt:
@@ -127,7 +127,7 @@ def send():
                 print("@<messageid>|<text> will quote the message at that messageid")
                 print("/chan <channel/nick> will switch the chatting channel to to <channel/nick>. \
                       Ensure that you have joined the channel, if trying to chat on a channel, first")
-                print("/join <channel> will join the channel for listening and /chan'ing to to speak")
+                print("/join <channel> [password] will join the channel for listening and /chan'ing to to speak")
                 print("/quit <message> will quit the server")
                 print("/away <message> will set you as away (and change your nickname accordingly)")
                 print("/back will un-set you as away (and change your nick back)")
