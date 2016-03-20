@@ -2,7 +2,7 @@
 
 """
     XeIRC Python IRC Client with native NickServ support
-    Copyright (C) 2015  Adonis Megalos
+    Copyright (C) 2016 Daman Heaton
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,12 +28,12 @@ import random
 import time
 import _thread as thread
 import easygui
-import ctypes
+#import ctypes
 
-ctypes.windll.kernel32.SetConsoleTitleW("XeIRC")
+#ctypes.windll.kernel32.SetConsoleTitleW("XeIRC")
 
 print("""
-    XeIRC IRC Client  Copyright (C) 2015  Adonis Megalos
+    XeIRC IRC Client  Copyright (C) 2016  Damian Heaton
     This program comes with ABSOLUTELY NO WARRANTY.
     This is free software, and you are welcome to redistribute it
     under certain conditions.
@@ -69,7 +69,7 @@ password = details[4]
 primary = [details[3]]
 secondary = []
 
-ctypes.windll.kernel32.SetConsoleTitleW("XeIRC - "+botnick+" @ "+server+":"+str(port))
+#ctypes.windll.kernel32.SetConsoleTitleW("XeIRC - "+botnick+" @ "+server+":"+str(port))
 
 if os.path.isdir("logs") == False:
     os.mkdir("logs")
