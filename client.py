@@ -174,6 +174,19 @@ while True:
         try:
             if nick != "Service":
                 msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] <"+nick+"> "+text
+                if '\\x0' in msg:
+                    msg = msg.replace("\\x0f", "[normal]")
+                    msg = msg.replace("\\x0310", "[turquoise]")
+                    msg = msg.replace("\\x031", "[black]")
+                    msg = msg.replace("\\x032", "[blue]")
+                    msg = msg.replace("\\x033", "[green]")
+                    msg = msg.replace("\\x034", "[red]")
+                    msg = msg.replace("\\x035", "[brown]")
+                    msg = msg.replace("\\x036", "[purple]")
+                    msg = msg.replace("\\x037", "[orange]")
+                    msg = msg.replace("\\x038", "[yellow]")
+                    msg = msg.replace("\\x039", "[light green]")
+                    msg = msg.replace("\\x030", "[white]")
                 msgs.append(msg)
                 print("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
                 file = open(logdir+"/"+chan+".log", "a")
