@@ -109,12 +109,13 @@ for line in unraw:
     
 root = tk.Tk()
 root.title("XeIRC IRC Client")
-channels = tk.Listbox(root,
-                     height = 2)
-channels.pack(fill='x', expand=True)
-channels.insert(tk.END, primary[0])
+root.iconbitmap("icon.ico")
 frame = tk.Frame(root)
 frame.pack(fill='both', expand='yes')
+channels = tk.Listbox(frame,
+                     height = 2)
+channels.pack(fill='x')
+channels.insert(tk.END, primary[0])
 
 chatLog = ScrolledText(
     master = frame,
@@ -125,17 +126,15 @@ chatLog = ScrolledText(
     fg = 'white'
 )
 # the padx/pady space will form a frame
-chatLog.pack(fill='both', expand=True)
+chatLog.pack(fill='both', expand="yes")
 chat = tk.Text(frame, padx=4, height=1)
-chat.pack(fill='x')
+chat.pack(fill='x', side="bottom")
 chatLog.config(state="disabled")
 def addchat(text):
     chatLog.config(state="normal")
     chatLog.insert("insert", text + "\n")
     chatLog.see(tk.END)
     chatLog.config(state="disabled")
-global channel
-channel = primary[0]
 def enterPressed(event):
     #addchat(chat.get("1.0",'end-1c'))
     sendt = chat.get("1.0",'end-2c')
