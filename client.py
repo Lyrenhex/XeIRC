@@ -1,26 +1,5 @@
-# -*- coding: utf-8 -*-
-
-"""
-    XeIRC Python IRC Client with native NickServ support
-    Copyright (C) 2016 Daman Heaton
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
-
-# colours
-# [56] [2015.09.19 21:43:49] [#8bit] <Scratso^logs> XeIRC notes: \x031black \x032blue \x033green \x034red \x035brown \x036purple \x037orange \x038yellow \x039lightgreen \x0310teal/turquoise-y? \x030white
-
+import tkinter as tk
+from tkinter.scrolledtext import ScrolledText
 import socket
 import os
 import sys
@@ -28,9 +7,6 @@ import random
 import time
 import _thread as thread
 import easygui
-#import ctypes
-
-#ctypes.windll.kernel32.SetConsoleTitleW("XeIRC")
 
 print("""
     XeIRC IRC Client  Copyright (C) 2016  Damian Heaton
@@ -65,8 +41,11 @@ if details[4] == "":
 else:
     nickserv = True
 password = details[4]
+global primary
 primary = [details[3]]
 secondary = []
+global channel
+channel = details[3]
 
 #ctypes.windll.kernel32.SetConsoleTitleW("XeIRC - "+botnick+" @ "+server+":"+str(port))
 
@@ -80,6 +59,7 @@ logdir = "logs/"+botnick+"/"+server
 
 msgs = []
 
+global irc
 irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print("connecting to: "+server)
 irc.connect((server,port))
@@ -89,145 +69,240 @@ irc.send(bytes("NICK "+ botnick +"\n", "utf-8"))
 text = str(irc.recv(2040))
 unraw=text.split("\\r\\n")
 for line in unraw:
-    #print(line)
-    try:
-        nick = line.split(":")[1].split("!")[0]
-        text = line.split(":", 2)[2]
-    except:
-        nick = "Service"
+    print(line)
     if line.find("PING :") != -1:
         irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
 for chan in primary:
     irc.send(bytes("JOIN "+ chan +"\n", "utf-8"))
-
+text = str(irc.recv(2040))
+unraw=text.split("\\r\\n")
+for line in unraw:
+    print(line)
+    if line.find("PING :") != -1:
+        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
+    
 if nickserv:
-    irc.send(bytes("PRIVMSG NickServ :IDENTIFY damianos2008\n", "utf-8"))
+    irc.send(bytes("PRIVMSG NickServ :IDENTIFY " + password + "\n", "utf-8"))
+text = str(irc.recv(2040))
+unraw=text.split("\\r\\n")
+for line in unraw:
+    print(line)
+    if line.find("PING :") != -1:
+        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
+for chan in primary:
+    irc.send(bytes("JOIN "+ chan +"\n", "utf-8"))
+print("i")
+text = str(irc.recv(2040))
+unraw=text.split("\\r\\n")
+for line in unraw:
+    print(line)
+    if line.find("PING :") != -1:
+        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
+for chan in primary:
+    irc.send(bytes("JOIN "+ chan +"\n", "utf-8"))
+text = str(irc.recv(2040))
+unraw=text.split("\\r\\n")
+for line in unraw:
+    print(line)
+    if line.find("PING :") != -1:
+        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
+    
+root = tk.Tk()
+root.title("XeIRC IRC Client")
+channels = tk.Listbox(root,
+                     height = 2)
+channels.pack(fill='x', expand=True)
+channels.insert(tk.END, primary[0])
+frame = tk.Frame(root)
+frame.pack(fill='both', expand='yes')
 
-def send():
-    channel = "#8bit"
-    while True:
-        try:
-            sendt = easygui.enterbox(channel, "Send IRC Message")
-            if sendt is None:
-                sendt = ""
-            if "@" in sendt:
-                msgid = sendt.split("|")[0].split("@")[1]
-                sendt = "\x1d"+msgs[int(msgid)]+"\x1d | " + sendt.split("|")[1]
-            if "/chan" in sendt:
-                channel = sendt.split(" ")[1]
-            elif "/join" in sendt:
-                channel = sendt.split(" ")[1]
-                irc.send(bytes("JOIN "+ sendt.split(" ", 1)[1] +"\n", "utf-8"))
-            elif "/quit" in sendt:
-                irc.send(bytes("QUIT :"+ sendt.split(" ", 1)[1] +"\n", "utf-8"))
-            elif "/names" in sendt:
-                irc.send(bytes("NAMES :"+ channel +"\n", "utf-8"))
-            elif "/away" in sendt:
-                irc.send(bytes("AWAY :"+ sendt.split(" ", 1)[1] +"\n", "utf-8"))
-                irc.send(bytes("NICK :"+ botnick +"^away\n", "utf-8"))
-            elif "/back" in sendt:
-                irc.send(bytes("AWAY\n", "utf-8"))
-                irc.send(bytes("NICK :"+ botnick +"\n", "utf-8"))
-            elif "/invite" in sendt:
-                irc.send(bytes("INVITE :"+ sendt.split(" ", 1)[1] + " " + sendt.split(" ", 2)[2] +"\n", "utf-8"))
-            elif "/kick" in sendt:
-                irc.send(bytes("PRIVMSG ChanServ :kick "+ channel +" "+ sendt.split(" ", 1)[1] + " " + sendt.split(" ",
-                                                                                                                   2)
-                [2] + "\n", "utf-8"))
-            elif "/help" in sendt:
-                print("Help:")
-                print("@<messageid>|<text> will quote the message at that messageid")
-                print("/chan <channel/nick> will switch the chatting channel to to <channel/nick>. \
+chatLog = ScrolledText(
+    master = frame,
+    wrap   = 'word',  # wrap text at full words only
+    width  = 25,      # characters
+    height = 10,      # text lines
+    bg = 'black',        # background color of edit area
+    fg = 'white'
+)
+# the padx/pady space will form a frame
+chatLog.pack(fill='both', expand=True)
+chat = tk.Text(frame, padx=4, height=1)
+chat.pack(fill='x')
+chatLog.config(state="disabled")
+def addchat(text):
+    chatLog.config(state="normal")
+    chatLog.insert("insert", text + "\n")
+    chatLog.see(tk.END)
+    chatLog.config(state="disabled")
+global channel
+channel = primary[0]
+def enterPressed(event):
+    #addchat(chat.get("1.0",'end-1c'))
+    sendt = chat.get("1.0",'end-2c')
+    try:
+        pars = sendt.split(" ")
+    except:
+        pars = [sendt]
+    try:
+        channel = str(channels.get(channels.curselection()[0]))
+    except:
+        channel = str(channels.get(0))
+    chat.delete("1.0",'end')
+    print(sendt)
+    if "@" in sendt:
+        msgid = sendt.split("|")[0].split("@")[1]
+        sendt = "\x1d"+msgs[int(msgid)]+"\x1d | " + sendt.split("|")[1]
+    if pars[0] == "/chan":
+        channel = sendt.split(" ")[1]
+    elif pars[0] == "/showchan":
+        addchat("Currently chatting on " + channel)
+    elif pars[0] == "/join":
+        channel = sendt.split(" ")[1]
+        irc.send(bytes("JOIN "+ sendt.split(" ", 1)[1] +"\n", "utf-8"))
+        channels.insert(tk.END, channel)
+    elif pars[0] == "/quit":
+        irc.send(bytes("QUIT :"+ sendt.split(" ", 1)[1] +"\n", "utf-8"))
+    elif pars[0] == "/names":
+        irc.send(bytes("NAMES :"+ channel +"\n", "utf-8"))
+    elif pars[0] == "/away":
+        irc.send(bytes("AWAY :"+ sendt.split(" ", 1)[1] +"\n", "utf-8"))
+        irc.send(bytes("NICK :"+ botnick +"^away\n", "utf-8"))
+    elif pars[0] == "/back":
+        irc.send(bytes("AWAY\n", "utf-8"))
+        irc.send(bytes("NICK :"+ botnick +"\n", "utf-8"))
+    elif pars[0] == "/invite":
+        irc.send(bytes("INVITE :"+ sendt.split(" ", 1)[1] + " " + sendt.split(" ", 2)[2] +"\n", "utf-8"))
+    elif pars[0] == "/kick":
+        irc.send(bytes("PRIVMSG ChanServ :kick "+ channel +" "+ sendt.split(" ", 1)[1] + " " + sendt.split(" ",
+                                                                                                           2)
+        [2] + "\n", "utf-8"))
+    elif pars[0] == "/msg":
+        recip = pars[1]
+        message = pars = sendt.split(" ", 2)[2]
+        irc.send(bytes("PRIVMSG " + recip + " :" + message + "\n", "utf-8"))
+        msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] " + botnick + " -> " + recip + ": " + message
+        msgs.append(msg)
+        addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
+    elif pars[0] == "/help":
+        addchat("Help:")
+        addchat("@<messageid>|<text> will quote the message at that messageid")
+        addchat("/showchan will show the current channel talking on")
+        addchat("/chan <channel/nick> will switch the chatting channel to to <channel/nick>. \
 Ensure that you have joined the channel, if trying to chat on a channel, first")
-                print("/join <channel> [password] will join the channel for listening and /chan'ing to to speak")
-                print("/quit <message> will quit the server")
-                print("/away <message> will set you as away (and change your nickname accordingly)")
-                print("/back will un-set you as away (and change your nick back)")
-                print("/invite <nick> <channel> will invite <nick> to <channel>")
-                print("/kick <nick> will kick <nick> from the current channel")
-            elif sendt == "":
-                pass
-            else:
-                irc.send(bytes("PRIVMSG "+ channel +" :" + sendt + "\n", "utf-8"))
-                msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+channel+"] <"+botnick+"> "+sendt
-                msgs.append(msg)
-                print("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
-        except:
-            continue
+        addchat("/join <channel> [password] will join the channel for listening and /chan'ing to to speak")
+        addchat("/quit <message> will quit the server")
+        addchat("/away <message> will set you as away (and change your nickname accordingly)")
+        addchat("/back will un-set you as away (and change your nick back)")
+        addchat("/invite <nick> <channel> will invite <nick> to <channel>")
+        addchat("/kick <nick> will kick <nick> from the current channel")
+        addchat("/names will list the people on the current channel")
+    elif sendt == "":
+        pass
+    else:
+        irc.send(bytes("PRIVMSG "+ channel +" :" + sendt + "\n", "utf-8"))
+        msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+channel+"] <"+botnick+"> "+sendt
+        msgs.append(msg)
+        addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
+root.bind('<Return>', enterPressed)
 
-thread.start_new_thread(send, ())
-
-while True:
-    text = str(irc.recv(2040))
-    unraw=text.split("\\r\\n")
-    for line in unraw:
-        try:
-            chan = line.split(" :")[0].split(" ")[2]
-            nick = line.split(":")[1].split("!")[0]
-            text = line.split(":", 2)[2]
-            pars = text.lower().split(" ")
-        except:
-            nick = "Service"
-        if server in nick:
-            nick = "Service"
-        try:
-            if nick != "Service":
-                msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] <"+nick+"> "+text
-                if '\\x0' in msg:
-                    msg = msg.replace("\\x0f", "[normal]")
-                    msg = msg.replace("\\x0310", "[turquoise]")
-                    msg = msg.replace("\\x031", "[black]")
-                    msg = msg.replace("\\x032", "[blue]")
-                    msg = msg.replace("\\x033", "[green]")
-                    msg = msg.replace("\\x034", "[red]")
-                    msg = msg.replace("\\x035", "[brown]")
-                    msg = msg.replace("\\x036", "[purple]")
-                    msg = msg.replace("\\x037", "[orange]")
-                    msg = msg.replace("\\x038", "[yellow]")
-                    msg = msg.replace("\\x039", "[light green]")
-                    msg = msg.replace("\\x030", "[white]")
-                msgs.append(msg)
-                print("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
-                file = open(logdir+"/"+chan+".log", "a")
-                file.write("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)]+"\n")
-                file.close()
-                if botnick in text:
-                    print("\a", end="")
-        except Exception as e:
-            print(e)
-        if line.find("PING :") != -1 and nick == "Service":
-            irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
-        elif line.find("JOIN :") != -1:
-            for chan1 in primary:
-                irc.send(bytes("JOIN "+ chan1 +"\n", "utf-8"))
-            for chan1 in secondary:
-                irc.send(bytes("JOIN "+ chan1 +"\n", "utf-8"))
-            if nickserv:
-                irc.send(bytes("PRIVMSG NickServ :IDENTIFY damianos2008\n", "utf-8"))
-            if nick != botnick:
-                msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
-                      +" has joined the channel."
-                msgs.append(msg)
-                print("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
-        elif line.find("PART :") != -1:
-            if nick != botnick:
-                msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
-                      +" has left the channel: "+line.split(":", 2)[2]+"."
-                msgs.append(msg)
-                print("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
-        elif line.find("QUIT :") != -1:
-            if nick != botnick:
-                msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
-                      +" has left the server: "+line.split(":", 2)[2]+"."
-                msgs.append(msg)
-                print("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
-        elif line.find("NICK :") != -1:
-            if nick != botnick:
-                msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
-                    +" has changed their name: "+line.split(":", 2)[2]+"."
-                msgs.append(msg)
-                print("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
-        elif line.find("353") != -1:
-            print("*** People currently on channel: "+text)
-
-   #thread.start_new_thread(listen, ())
+def getMsgs():
+    while True:
+        text = str(irc.recv(2040))
+        unraw=text.split("\\r\\n")
+        for line in unraw:
+            print(line)
+            try:
+                chan = line.split(" :")[0].split(" ")[2]
+                nick = line.split(":")[1].split("!")[0]
+                text = line.split(":", 2)[2]
+                pars = text.lower().split(" ")
+            except:
+                nick = "Service"
+                chan = "unknown channel"
+            if server in nick:
+                nick = "Service"
+            if "401" in line:
+                addchat("[error] " + text)
+            try:
+                if nick != "Service":
+                    if chan != botnick:
+                        msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] <"+nick+"> "+text
+                        if '\\x0' in msg:
+                            msg = msg.replace("\\x0f", "[normal]")
+                            msg = msg.replace("\\x0310", "[turquoise]")
+                            msg = msg.replace("\\x031", "[black]")
+                            msg = msg.replace("\\x032", "[blue]")
+                            msg = msg.replace("\\x033", "[green]")
+                            msg = msg.replace("\\x034", "[red]")
+                            msg = msg.replace("\\x035", "[brown]")
+                            msg = msg.replace("\\x036", "[purple]")
+                            msg = msg.replace("\\x037", "[orange]")
+                            msg = msg.replace("\\x038", "[yellow]")
+                            msg = msg.replace("\\x039", "[light green]")
+                            msg = msg.replace("\\x030", "[white]")
+                        msgs.append(msg)
+                        addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
+                        file = open(logdir+"/"+chan+".log", "a")
+                        file.write("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)] + "\n")
+                        file.close()
+                        if botnick in text:
+                            print("\a", end="")
+                    else:
+                        msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] " + nick + " -> " + botnick + ": " + text
+                        if '\\x0' in msg:
+                            msg = msg.replace("\\x0f", "[normal]")
+                            msg = msg.replace("\\x0310", "[turquoise]")
+                            msg = msg.replace("\\x031", "[black]")
+                            msg = msg.replace("\\x032", "[blue]")
+                            msg = msg.replace("\\x033", "[green]")
+                            msg = msg.replace("\\x034", "[red]")
+                            msg = msg.replace("\\x035", "[brown]")
+                            msg = msg.replace("\\x036", "[purple]")
+                            msg = msg.replace("\\x037", "[orange]")
+                            msg = msg.replace("\\x038", "[yellow]")
+                            msg = msg.replace("\\x039", "[light green]")
+                            msg = msg.replace("\\x030", "[white]")
+                        msgs.append(msg)
+                        addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
+                        file = open(logdir+"/"+chan+".log", "a")
+                        file.write("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)] + "\n")
+                        file.close()
+                        if botnick in text:
+                            print("\a", end="")
+            except Exception as e:
+                print(e)
+            if line.find("PING :") != -1 and nick == "Service":
+                irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
+            elif line.find("JOIN :") != -1:
+                for chan1 in primary:
+                    irc.send(bytes("JOIN "+ chan1 +"\n", "utf-8"))
+                for chan1 in secondary:
+                    irc.send(bytes("JOIN "+ chan1 +"\n", "utf-8"))
+                if nick != botnick:
+                    msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] * "+ line.split(":")[1].split("!")[0] \
+                          +" has joined " + line.split(":")[2] + "."
+                    msgs.append(msg)
+                    addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
+            elif line.find("PART :") != -1:
+                if nick != botnick:
+                    msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
+                          +" has left the channel: "+line.split(":", 2)[2]+"."
+                    msgs.append(msg)
+                    addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
+            elif line.find("QUIT :") != -1:
+                if nick != botnick:
+                    msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
+                          +" has left the server: "+line.split(":", 2)[2]+"."
+                    msgs.append(msg)
+                    addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
+            elif line.find("NICK :") != -1:
+                if nick != botnick:
+                    msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
+                        +" has changed their name: "+line.split(":", 2)[2]+"."
+                    msgs.append(msg)
+                    addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
+            elif line.find("353") != -1:
+                addchat("*** People currently on channel: "+text + "\n")
+thread.start_new_thread(getMsgs, ())
+        
+root.mainloop()
