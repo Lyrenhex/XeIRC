@@ -44,7 +44,6 @@ if os.path.exists("details.txt") and os.access("details.txt", os.R_OK):
     for line in open("details.txt").read().split("\n"):
         if line != "":
             pre.append(line)
-# pre = ["Scratso", "irc.editingarchive.com", "6667", "#8bit", "damianos2008"]
 
 details = easygui.multpasswordbox("Enter IRC Connection Details.", "Connect to IRC.", ["Nickname", "Server", "Port",
                                                                                        "Channel", "Password"],
