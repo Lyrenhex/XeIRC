@@ -221,7 +221,12 @@ root.iconbitmap("icon.ico")
 frame = tk.Frame(root)
 frame.pack(fill='both', expand='yes')
 channels = tk.Listbox(frame,
-                     height = 2)
+                     height = 2,
+                     bg = 'black',
+                     fg = "#888478",
+                     highlightthickness=0,
+                     selectbackground="#4f4f4f",
+                     selectforeground="#888478")
 channels.pack(fill='x')
 channels.insert(tk.END, primary[0])
 
@@ -231,11 +236,16 @@ chatLog = ScrolledText(
     width  = 25,      # characters
     height = 10,      # text lines
     bg = 'black',        # background color of edit area
-    fg = 'white'
+    fg = '#0B62ED',
+    insertbackground = "#E80860",
+    highlightbackground="#888478",
+    selectbackground="#E80860",
+    selectforeground="#0B62ED"
 )
 # the padx/pady space will form a frame
 chatLog.pack(fill='both', expand="yes")
-chat = tk.Text(frame, padx=4, height=1)
+chat = tk.Text(frame, padx=4, height=1, bg="black", fg="#E80860", insertbackground="#0B62ED",
+               selectbackground="#0B62ED", selectforeground="#E80860", highlightthickness=0)
 chat.pack(fill='x', side="bottom")
 chatLog.config(state="disabled")
 def addchat(text):
