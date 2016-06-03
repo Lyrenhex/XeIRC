@@ -8,7 +8,7 @@ executables = [cx_Freeze.Executable("client.py",
 cx_Freeze.setup(
     name="XeIRC IRC Client",
     author="Damian Heaton",
-    version="0.1.4",
+    version="0.1.5",
     options={"build_exe": {"packages":["tkinter", "easygui"],
                            "excludes": [],
                            "include_files":["icon.ico"]} },

@@ -8,6 +8,9 @@ import time
 import _thread as thread
 import easygui
 
+print("""XeIRC is a community-driven project by Damian Heaton (www.damianheaton.com)
+Please see xeirc.xyz for help, information, and XeIRC's source code.""")
+
 print("""
     XeIRC IRC Client  Copyright (C) 2016  Damian Heaton
     This program comes with ABSOLUTELY NO WARRANTY.
@@ -15,39 +18,137 @@ print("""
     under certain conditions.
 """)
 
-pre = []
-if os.path.exists("details.txt") and os.access("details.txt", os.R_OK):
-    for line in open("details.txt").read().split("\n"):
-        if line != "":
-            pre.append(line)
+class ServerDetails(easygui.EgStore):
+    def __init__(self, filename):
+        self.nickname = "JohnDoe"
+        self.ip = "irc.example.com"
+        self.port = 6667
+        self.channel = "#channel"
+        self.password = ""
+        
+        self.filename = filename
+        self.restore()
 
-details = easygui.multpasswordbox("Enter IRC Connection Details.", "Connect to IRC.", ["Nickname", "Server", "Port",
-                                                                                       "Channel", "Password"],
+connSettings = ServerDetails("conn.xe")
+pre = [
+    connSettings.nickname,
+    connSettings.ip,
+    connSettings.port,
+    connSettings.channel,
+    connSettings.password
+]
+
+details = easygui.multpasswordbox("Please enter IRC Connection Details. \
+Settings marked with an asterisk (*) are required.",
+                                  "Connect to IRC.", ["Your Nickname (*)", 
+                                                      "Server Address (*)", 
+                                                      "Server Port (*)", 
+                                                      "Channel (*)", 
+                                                      "NickServ Password"],
                                   pre)
 
-f = open("details.txt", "w")
-f.write("")
-f.close()
-f = open("details.txt", "a")
-for line in details:
-    f.write(line+"\n")
-f.close()
+connSettings.nickname = details[0]
+connSettings.ip = details[1]
+connSettings.port = int(details[2])
+connSettings.channel = details[3]
+connSettings.password = details[4]
+connSettings.store()
 
-botnick = details[0]
-server = details[1]
-port = int(details[2])
-if details[4] == "":
+botnick = connSettings.nickname
+server = connSettings.ip
+port = connSettings.port
+password = connSettings.password
+if password == "":
     nickserv = False
 else:
     nickserv = True
-password = details[4]
 global primary
-primary = [details[3]]
+primary = [connSettings.channel]
 secondary = []
-global channel
-channel = details[3]
 
-#ctypes.windll.kernel32.SetConsoleTitleW("XeIRC - "+botnick+" @ "+server+":"+str(port))
+class CommandHelp():
+    """
+    This class keeps records of the help information of each command and will 
+    provide formatted responses as needed by the /help command.
+    """
+    def __init__(self):
+        self.commands = {}
+        self.extHelp = {}
+    
+    def addCommand(self, cmdName, cmdFormat, cmdShortHelp,
+                   cmdLongHelp):
+        self.commands[cmdName] = [cmdFormat, cmdShortHelp]
+        self.extHelp[cmdName] = cmdLongHelp
+    
+    def listCommands(self):
+        entries = []
+        for command in self.commands:
+            cmdEntry = ("* " + self.commands[command][0]
+                        + " :: " + self.commands[command][1])
+            entries.append(cmdEntry)
+        return entries
+    
+    def cmdHelp(self, command):
+        try:
+            helpEntry = ["Help for command \"" + command + "\":",
+                         "Format: " + self.commands[command][0],
+                         "Description: " + self.extHelp[command]]
+            return helpEntry
+        except IndexError:
+            raise ValueError("The command \"" + command + "\" does not exist.")
+    
+cmdHelp = CommandHelp()
+cmdHelp.addCommand("@", "@<messageid>|<response text>", "This will quote a \
+specific message, allowing you to respond clearly.", """@ notation will allow \
+you to respond to the message which is identified by messageid with your \
+response text. Messageids are shown in brackets ([]) at the beginning of \
+logged messages. Some messages (such as system/client messages) are not \
+assigned messageids, and so cannot be quoted with @ notation.""")
+cmdHelp.addCommand("/showchan", "/showchan", "This will display the \
+current channel that you are talking on to you in chat.", """/showchan will \
+display the channel that you are currently talking on in chat, similar to \
+checking the command list's currently-selected channel (except this one does \
+not need a channel selected to show the active channel.)""")
+cmdHelp.addCommand("/join", "/join <channel> [password]", "This will join a \
+channel with a password if supplied.", """/join will join a channel, using a \
+password if you supply one. When you join a channel, you will be able to see \
+chat within that channel and talk in the channel. However, /join will not \
+automatically set the active channel to the channel that you are joining, and \
+so the channel must be manually selected as the active channel in your channel \
+list.""")
+cmdHelp.addCommand("/quit", "/quit <reason>", "This will quit the server, \
+displaying the provided reason along with it.", """/quit will send a QUIT \
+request, citing your provided reason, to the connected IRC server. You will \
+not be able to chat or see any new messages on the IRC server. Currently, there \
+IS NO accompanying /joinserv command to join a server after quitting one.""")
+cmdHelp.addCommand("/away", "/away <reason>", "This will set you as away on \
+the IRC server, citing the provided reason along with it.", """/away will \
+set you as away on the IRC server as a result of the reason provided, alerting \
+other users that you will not be able to respond to messages at the moment. It \
+will also automatically update your nickname to (your nickname)^away, to show \
+that you are away to clients that do not support the AWAY syntax.""")
+cmdHelp.addCommand("/back", "/back", "This will undo the effects of the /away \
+command.", """/back will mark you as having returned to the IRC server. It \
+will also automatically reset your nickname back to its original state, to show \
+that you are back to clients that do not support the AWAY syntax.""")
+cmdHelp.addCommand("/invite", "/invite <nick> <channel>", "This will invite a user \
+to an IRC channel.", """/invite will invite a user to join an IRC channel, additionally \
+allowing them to do so if the channel is restricted access, provided that you have \
+the rights to do so. It will not necessarily force the user to join the channel.""")
+cmdHelp.addCommand("/kick", "/kick <nick>", "This will kick a user from the current \
+channel.", """/kick will remove the requested user from the current channel, provided \
+that you have the rights to do so on the current channel. Kicks are handled by ChanServ, \
+and will not work on a server if ChanServ is not enabled.""")
+cmdHelp.addCommand("/names", "/names", "This will display a list of the users currently \
+on the active channel.", """/names will display a list of users on the active channel, \
+separated by spaces. Ops are represented by an @ next to their name, half-ops shown with &, \
+owners shown by ~, and normal users will only show their name.""")
+cmdHelp.addCommand("/msg", "/msg <nick> <message>", "This will send a user a private \
+message.", """/msg will send the defined user a message, which only they will be able to \
+see. They will NOT receive the message if they are offline, due to the volatile nature of \
+IRC chat.""")        
+        
+print("Logging chat to", os.getcwd())
 
 if os.path.isdir("logs") == False:
     os.mkdir("logs")
@@ -63,7 +164,8 @@ global irc
 irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print("connecting to: "+server)
 irc.connect((server,port))
-irc.send(bytes("USER "+ botnick +" "+ botnick +" "+ botnick +" :"+ botnick +"\n", "utf-8"))
+irc.send(bytes("USER "+ botnick +" "+ botnick +" "+ botnick +" :"+ botnick +"\n", 
+               "utf-8"))
 irc.send(bytes("NICK "+ botnick +"\n", "utf-8"))
 
 text = str(irc.recv(2040))
@@ -71,7 +173,8 @@ unraw=text.split("\\r\\n")
 for line in unraw:
     print(line)
     if line.find("PING :") != -1:
-        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
+        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', 
+                       "utf-8"))
 for chan in primary:
     irc.send(bytes("JOIN "+ chan +"\n", "utf-8"))
 text = str(irc.recv(2040))
@@ -79,16 +182,19 @@ unraw=text.split("\\r\\n")
 for line in unraw:
     print(line)
     if line.find("PING :") != -1:
-        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
+        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', 
+                       "utf-8"))
     
 if nickserv:
-    irc.send(bytes("PRIVMSG NickServ :IDENTIFY " + password + "\n", "utf-8"))
+    irc.send(bytes("PRIVMSG NickServ :IDENTIFY " + password + "\n", 
+                   "utf-8"))
 text = str(irc.recv(2040))
 unraw=text.split("\\r\\n")
 for line in unraw:
     print(line)
     if line.find("PING :") != -1:
-        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
+        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', 
+                       "utf-8"))
 for chan in primary:
     irc.send(bytes("JOIN "+ chan +"\n", "utf-8"))
 print("i")
@@ -97,7 +203,8 @@ unraw=text.split("\\r\\n")
 for line in unraw:
     print(line)
     if line.find("PING :") != -1:
-        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
+        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', 
+                       "utf-8"))
 for chan in primary:
     irc.send(bytes("JOIN "+ chan +"\n", "utf-8"))
 text = str(irc.recv(2040))
@@ -105,7 +212,8 @@ unraw=text.split("\\r\\n")
 for line in unraw:
     print(line)
     if line.find("PING :") != -1:
-        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
+        irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', 
+                       "utf-8"))
     
 root = tk.Tk()
 root.title("XeIRC IRC Client")
@@ -148,7 +256,7 @@ def enterPressed(event):
         channel = str(channels.get(0))
     chat.delete("1.0",'end')
     print(sendt)
-    if "@" in sendt:
+    if "@" in pars[0]:
         msgid = sendt.split("|")[0].split("@")[1]
         sendt = "\x1d"+msgs[int(msgid)]+"\x1d | " + sendt.split("|")[1]
     if pars[0] == "/chan":
@@ -183,18 +291,24 @@ def enterPressed(event):
         msgs.append(msg)
         addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
     elif pars[0] == "/help":
-        addchat("Help:")
-        addchat("@<messageid>|<text> will quote the message at that messageid")
-        addchat("/showchan will show the current channel talking on")
-        addchat("/chan <channel/nick> will switch the chatting channel to to <channel/nick>. \
-Ensure that you have joined the channel, if trying to chat on a channel, first")
-        addchat("/join <channel> [password] will join the channel for listening and /chan'ing to to speak")
-        addchat("/quit <message> will quit the server")
-        addchat("/away <message> will set you as away (and change your nickname accordingly)")
-        addchat("/back will un-set you as away (and change your nick back)")
-        addchat("/invite <nick> <channel> will invite <nick> to <channel>")
-        addchat("/kick <nick> will kick <nick> from the current channel")
-        addchat("/names will list the people on the current channel")
+        if len(pars) == 1:
+            addchat("Help:")
+            addchat("Please note that <variables> are required for the command to \
+    work, and [variables] are optional. For example, to join #channel (which has \
+    no channel password), you would do /join #channel .")
+            addchat("To get detailed help on a specific command, do \"/help <command>\"\
+    , for example, \"/help @\" will provide help on @ notation, and \"/help /join\" will \
+    provide help on the /join command.")
+            cmds = cmdHelp.listCommands()
+            for cmd in cmds:
+                addchat(cmd)
+        else:
+            try:
+                cmd = cmdHelp.cmdHelp(pars[1])
+                for line in cmd:
+                    addchat(line)
+            except ValueError as e:
+                addchat("[error] " + e)
     elif sendt == "":
         pass
     else:
