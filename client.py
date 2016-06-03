@@ -8,15 +8,21 @@ import time
 import _thread as thread
 import easygui
 
-print("""XeIRC is a community-driven project by Damian Heaton (www.damianheaton.com)
-Please see xeirc.xyz for help, information, and XeIRC's source code.""")
+easygui.msgbox("""XeIRC is a community-driven project by Damian Heaton (www.damianheaton.com)
+Please see www.xeirc.xyz for help, information, and XeIRC's source code.
 
-print("""
-    XeIRC IRC Client  Copyright (C) 2016  Damian Heaton
-    This program comes with ABSOLUTELY NO WARRANTY.
-    This is free software, and you are welcome to redistribute it
-    under certain conditions.
-""")
+XeIRC's source code can also be found with the compiled .exe files for XeIRC:
+- If this is a zipped release version, then the source will be a file called
+  "client.py" found where you extracted XeIRC to.
+- If this is an installed version of XeIRC, navigate to the installation directory;
+  the source is a file called "client.py".
+- If you're runnning this from source, you know exactly where the source is. :)
+
+XeIRC IRC Client  Copyright (C) 2016  Damian Heaton
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions. Please see the GNU General Public License
+version 3 for more information.""")
 
 class ServerDetails(easygui.EgStore):
     def __init__(self, filename):
@@ -46,6 +52,9 @@ Settings marked with an asterisk (*) are required.",
                                                       "Channel (*)", 
                                                       "NickServ Password"],
                                   pre)
+
+if details is None:
+    sys.exit(0)
 
 connSettings.nickname = details[0]
 connSettings.ip = details[1]
