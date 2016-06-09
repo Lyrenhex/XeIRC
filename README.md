@@ -11,8 +11,8 @@ XeIRC is still in active development and has a lot of capabilities to be added, 
 XeIRC also has built-in NickServ password support, however there is currently no support for password-protected servers - these are being worked on.
 
 ## How to use
-Really, there are two ways to use XeIRC, and it depends on how close to the edge you want to live. ;)
-You can either run the latest source build of XeIRC, install a compiled version, run a precompiled standalone release of XeIRC (which will be further behind in development).
+Really, there are three ways to run XeIRC, and it depends on how close to the edge you want to live. ;)
+You can either install a compiled version, run a precompiled standalone release of XeIRC, or run the latest source build of XeIRC.
 The following instructions are provided from a Windows standpoint, and I'm going to guess it should work similarly on Linux. If it doesn't work, please, please, please post an issue!
 
 ### Installing a release
@@ -20,9 +20,17 @@ The following instructions are provided from a Windows standpoint, and I'm going
 2. Run "XeIRC IRC Client-`x.x.x`-win32.msi", where `x.x.x` is the latest version number.
 3. Follow the on-screen installation instructions.
 4. Launch XeIRC from your Start Menu.
-5. You should be met with a command-line window and a separate window asking for IRC connection details; fill it in! (When it asks for a "Password", that's for NickServ; leave it blank if you don't need to authenticate with NickServ.)
-6. From there, chat will be displayed in the command-line window, and you can chat in the popup window with a textbox. Try `/help` to see a list of commands currently supported by XeIRC.
+5. You should be met with a window asking for IRC connection details; fill it in! (When it asks for a "NickServ Password", that's for NickServ; leave it blank if you don't need to authenticate with NickServ.)
+6. From there, chat will be displayed in the chatlog, and you can chat in the box just beneath the chatlog (the chatlog's text is blue, while your text that you're typing is red). Try `/help` to see a list of commands currently supported by XeIRC.
 7. Have fun! :)
+
+### Running from standalone release
+1. First, you need to go to the release folder.
+2. Extract one of the zip files (probably the latest, would be a good idea) to wherever you want.
+3. Run client.exe.
+4. You should be met with a command-line window and a separate window asking for IRC connection details; fill it in! (When it asks for a "Password", that's for NickServ; leave it blank if you don't need to authenticate with NickServ.)
+5. From there, chat will be displayed in the chatlog, and you can chat in the box just beneath the chatlog (the chatlog's text is blue, while your text that you're typing is red). Try `/help` to see a list of commands currently supported by XeIRC.
+6. Have fun! :)
 
 ### Running from source
 1. First, you need to download Python 3.x (that is, any version of Python 3.2 or above). I can personally vouch for it working on Python 3.4.4. Get it from [the Python website.](http://python.org)
@@ -34,13 +42,14 @@ The following instructions are provided from a Windows standpoint, and I'm going
 3. Easygui should install successfully; feel free to ask for help if it doesn't or you don't understand the previous instructions.
 4. Run "client.py"; you should be able to run it fine by double-clicking.
 5. You should be met with a command-line window and a separate window asking for IRC connection details; fill it in! (When it asks for a "Password", that's for NickServ; leave it blank if you don't need to authenticate with NickServ.)
-6. From there, chat will be displayed in the command-line window, and you can chat in the popup window with a textbox. Try `/help` to see a list of commands currently supported by XeIRC.
+6. From there, chat will be displayed in the chatlog, and you can chat in the box just beneath the chatlog (the chatlog's text is blue, while your text that you're typing is red). Try `/help` to see a list of commands currently supported by XeIRC.
 7. Have fun! :)
 
-### Running from standalone release
-1. First, you need to go to the release folder.
-2. Extract one of the zip files (probably the latest, would be a good idea) to wherever you want.
-3. Run client.exe.
-4. You should be met with a command-line window and a separate window asking for IRC connection details; fill it in! (When it asks for a "Password", that's for NickServ; leave it blank if you don't need to authenticate with NickServ.)
-5. From there, chat will be displayed in the command-line window, and you can chat in the popup window with a textbox. Try `/help` to see a list of commands currently supported by XeIRC.
-6. Have fun! :)
+## Support and contact
+There are a couple of ways to get help and contact me;
+- Any of the ways on my [Social page.](http://damianheaton.com/social.php)
+- Submit an issue in the issue tracker
+- Or via IRC, as we have an official channel:
+  - Server IP Address: chat.freenode.net
+  - Server Port: 6667
+  - Channel: #xeirc

@@ -26,10 +26,10 @@ version 3 for more information.""")
 
 class ServerDetails(easygui.EgStore):
     def __init__(self, filename):
-        self.nickname = "JohnDoe"
-        self.ip = "irc.example.com"
+        self.nickname = "XeIRCUser"
+        self.ip = "chat.freenode.com"
         self.port = 6667
-        self.channel = "#channel"
+        self.channel = "#xeirc"
         self.password = ""
         
         self.filename = filename
@@ -184,6 +184,9 @@ for line in unraw:
     if line.find("PING :") != -1:
         irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', 
                        "utf-8"))
+    elif "433" in line and "Nickname is already in use" in line:
+        easygui.msgbox("Nickname already in use. Trying another..."))
+        irc.send(bytes("NICK "+ botnick + str(random.randint(1, 100)) + "\n", "utf-8"))
 for chan in primary:
     irc.send(bytes("JOIN "+ chan +"\n", "utf-8"))
 text = str(irc.recv(2040))
@@ -291,8 +294,8 @@ def enterPressed(event):
     elif pars[0] == "/names":
         irc.send(bytes("NAMES :"+ channel +"\n", "utf-8"))
     elif pars[0] == "/away":
-        irc.send(bytes("AWAY :"+ sendt.split(" ", 1)[1] +"\n", "utf-8"))
         irc.send(bytes("NICK :"+ botnick +"^away\n", "utf-8"))
+        irc.send(bytes("AWAY :"+ sendt.split(" ", 1)[1] +"\n", "utf-8"))
     elif pars[0] == "/back":
         irc.send(bytes("AWAY\n", "utf-8"))
         irc.send(bytes("NICK :"+ botnick +"\n", "utf-8"))
@@ -349,92 +352,101 @@ def getMsgs():
                 text = line.split(":", 2)[2]
                 pars = text.lower().split(" ")
             except:
-                nick = "Service"
                 chan = "unknown channel"
-            if server in nick:
+                nick = "Service"
+            if "." in nick:
                 nick = "Service"
             if "401" in line:
                 addchat("[error] " + text)
-            try:
-                if nick != "Service":
-                    if chan != botnick:
-                        msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] <"+nick+"> "+text
-                        if '\\x0' in msg:
-                            msg = msg.replace("\\x0f", "[normal]")
-                            msg = msg.replace("\\x0310", "[turquoise]")
-                            msg = msg.replace("\\x031", "[black]")
-                            msg = msg.replace("\\x032", "[blue]")
-                            msg = msg.replace("\\x033", "[green]")
-                            msg = msg.replace("\\x034", "[red]")
-                            msg = msg.replace("\\x035", "[brown]")
-                            msg = msg.replace("\\x036", "[purple]")
-                            msg = msg.replace("\\x037", "[orange]")
-                            msg = msg.replace("\\x038", "[yellow]")
-                            msg = msg.replace("\\x039", "[light green]")
-                            msg = msg.replace("\\x030", "[white]")
+            elif "372" in line:
+                addchat("[motd] " + text)
+            elif "376" in line or "305" in line or "306" in line:
+                addchat("[sys] " + text)
+            elif "MODE" in line or "366" in line:
+                pass
+            elif "332" in line:
+                addchat("[channel topic] " + text)
+            else:
+                try:
+                    if nick != "Service":
+                        if chan != botnick:
+                            msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] <"+nick+"> "+text
+                            if '\\x0' in msg:
+                                msg = msg.replace("\\x0f", "[normal]")
+                                msg = msg.replace("\\x0310", "[turquoise]")
+                                msg = msg.replace("\\x031", "[black]")
+                                msg = msg.replace("\\x032", "[blue]")
+                                msg = msg.replace("\\x033", "[green]")
+                                msg = msg.replace("\\x034", "[red]")
+                                msg = msg.replace("\\x035", "[brown]")
+                                msg = msg.replace("\\x036", "[purple]")
+                                msg = msg.replace("\\x037", "[orange]")
+                                msg = msg.replace("\\x038", "[yellow]")
+                                msg = msg.replace("\\x039", "[light green]")
+                                msg = msg.replace("\\x030", "[white]")
+                            msgs.append(msg)
+                            addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
+                            file = open(logdir+"/"+chan+".log", "a")
+                            file.write("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)] + "\n")
+                            file.close()
+                            if botnick in text:
+                                print("\a", end="")
+                        else:
+                            msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] " + nick + " -> " + botnick + ": " + text
+                            if '\\x0' in msg:
+                                msg = msg.replace("\\x0f", "[normal]")
+                                msg = msg.replace("\\x0310", "[turquoise]")
+                                msg = msg.replace("\\x031", "[black]")
+                                msg = msg.replace("\\x032", "[blue]")
+                                msg = msg.replace("\\x033", "[green]")
+                                msg = msg.replace("\\x034", "[red]")
+                                msg = msg.replace("\\x035", "[brown]")
+                                msg = msg.replace("\\x036", "[purple]")
+                                msg = msg.replace("\\x037", "[orange]")
+                                msg = msg.replace("\\x038", "[yellow]")
+                                msg = msg.replace("\\x039", "[light green]")
+                                msg = msg.replace("\\x030", "[white]")
+                            msgs.append(msg)
+                            addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
+                            file = open(logdir+"/"+chan+".log", "a")
+                            file.write("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)] + "\n")
+                            file.close()
+                            if botnick in text:
+                                print("\a", end="")
+                except Exception as e:
+                    print(e)
+                if line.find("PING :") != -1 and nick == "Service":
+                    irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
+                elif line.find("JOIN :") != -1:
+                    for chan1 in primary:
+                        irc.send(bytes("JOIN "+ chan1 +"\n", "utf-8"))
+                    for chan1 in secondary:
+                        irc.send(bytes("JOIN "+ chan1 +"\n", "utf-8"))
+                    if nick != botnick:
+                        msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] * "+ line.split(":")[1].split("!")[0] \
+                              +" has joined " + line.split(":")[2] + "."
                         msgs.append(msg)
                         addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
-                        file = open(logdir+"/"+chan+".log", "a")
-                        file.write("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)] + "\n")
-                        file.close()
-                        if botnick in text:
-                            print("\a", end="")
-                    else:
-                        msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] " + nick + " -> " + botnick + ": " + text
-                        if '\\x0' in msg:
-                            msg = msg.replace("\\x0f", "[normal]")
-                            msg = msg.replace("\\x0310", "[turquoise]")
-                            msg = msg.replace("\\x031", "[black]")
-                            msg = msg.replace("\\x032", "[blue]")
-                            msg = msg.replace("\\x033", "[green]")
-                            msg = msg.replace("\\x034", "[red]")
-                            msg = msg.replace("\\x035", "[brown]")
-                            msg = msg.replace("\\x036", "[purple]")
-                            msg = msg.replace("\\x037", "[orange]")
-                            msg = msg.replace("\\x038", "[yellow]")
-                            msg = msg.replace("\\x039", "[light green]")
-                            msg = msg.replace("\\x030", "[white]")
+                elif line.find("PART :") != -1:
+                    if nick != botnick:
+                        msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
+                              +" has left the channel: "+line.split(":", 2)[2]+"."
                         msgs.append(msg)
                         addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
-                        file = open(logdir+"/"+chan+".log", "a")
-                        file.write("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)] + "\n")
-                        file.close()
-                        if botnick in text:
-                            print("\a", end="")
-            except Exception as e:
-                print(e)
-            if line.find("PING :") != -1 and nick == "Service":
-                irc.send(bytes('PONG :' + line.split(" :")[1].upper() + '\r\n', "utf-8"))
-            elif line.find("JOIN :") != -1:
-                for chan1 in primary:
-                    irc.send(bytes("JOIN "+ chan1 +"\n", "utf-8"))
-                for chan1 in secondary:
-                    irc.send(bytes("JOIN "+ chan1 +"\n", "utf-8"))
-                if nick != botnick:
-                    msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] * "+ line.split(":")[1].split("!")[0] \
-                          +" has joined " + line.split(":")[2] + "."
-                    msgs.append(msg)
-                    addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
-            elif line.find("PART :") != -1:
-                if nick != botnick:
-                    msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
-                          +" has left the channel: "+line.split(":", 2)[2]+"."
-                    msgs.append(msg)
-                    addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
-            elif line.find("QUIT :") != -1:
-                if nick != botnick:
-                    msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
-                          +" has left the server: "+line.split(":", 2)[2]+"."
-                    msgs.append(msg)
-                    addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
-            elif line.find("NICK :") != -1:
-                if nick != botnick:
-                    msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
-                        +" has changed their name: "+line.split(":", 2)[2]+"."
-                    msgs.append(msg)
-                    addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
-            elif line.find("353") != -1:
-                addchat("*** People currently on channel: "+text + "\n")
+                elif line.find("QUIT :") != -1:
+                    if nick != botnick:
+                        msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
+                              +" has left the server: "+line.split(":", 2)[2]+"."
+                        msgs.append(msg)
+                        addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
+                elif line.find("NICK :") != -1:
+                    if nick != botnick:
+                        msg = "["+time.strftime("%Y.%m.%d %H:%M:%S")+"] ["+chan+"] * "+ line.split(":")[1].split("!")[0] \
+                            +" has changed their name: "+line.split(":", 2)[2]+"."
+                        msgs.append(msg)
+                        addchat("["+str(msgs.index(msg))+"] "+msgs[msgs.index(msg)])
+                elif line.find("353") != -1:
+                    addchat("*** People currently on channel: "+text + "\n")
 thread.start_new_thread(getMsgs, ())
         
 root.mainloop()
